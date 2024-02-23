@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: poster-app
+  namespace: serverless 
+  labels:
+    app: poster-app  
+spec:
+  completions: 5
+  parallelism: 2
+  completionMode: Indexed  # required for the feature
+  template:
+    spec:
+      securityContext: 
+        runAsNonRoot: true 
+        runAsUser: 1000 
+        seccompProfile:
+          type: RuntimeDefault    
+      automountServiceAccountToken: false    
+      serviceAccountName: aws-sdk # configure IRSA - https://docs.aws.amazon.com/eks/latest/userguide/pod-configuration.html   
+      containers:
+      - name: poster-app
+        image:  berry2012/post-request-app:v1
+        imagePullPolicy: Always
+        env:
+        - name: ENDPOINT
+          value: "https://hw728w1340.execute-api.eu-west-1.amazonaws.com/prod/vehicles"        
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false     
+          readOnlyRootFilesystem: true    
+          capabilities:
+            drop:
+              - ALL    
+      restartPolicy: Never
+  backoffLimit: 4

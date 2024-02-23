@@ -15,4 +15,4 @@ http.createServer(function (req, res) {
 	res.end('App Runner Demo with a Sample Nodejs App!'); 
 
 }).listen(8080); 
-
+console.log('Server started...');
